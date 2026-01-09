@@ -1,0 +1,53 @@
+
+table {
+    width: 100%;
+    border-collapse: collapse;
+}
+
+td {
+    padding: 10px;
+    text-align: center;
+    border: 1px solid #ddd; 
+}
+
+
+.sidebar {
+    width: 20%; 
+    background-color: rgb(119, 181, 247); 
+    color: white; 
+}
+
+
+.content {
+    width: 80%; 
+    background-color: white; 
+    color: black; 
+}
+
+
+.navigation {
+    background-color: red; 
+    color: white; 
+}
+
+
+.footer, .header {
+    background-color: rgb(244, 242, 205);
+    color: black; 
+}
+
+
+p {
+    text-align: left;  
+    text-indent: 20px; 
+    margin: 0 0 10px 0; 
+    line-height: 1.5;  
+    color: black; 
+}
+
+
+.last-cell {
+    width: 60%; 
+    text-align: right;  
+    padding-right: 10px; 
+}
