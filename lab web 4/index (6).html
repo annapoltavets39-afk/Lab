@@ -1,0 +1,486 @@
+<!DOCTYPE html>
+<html lang="uk">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Онлайн-магазин Електроніки</title>
+    <!-- Bootstrap CSS CDN -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
+    <!-- Font Awesome для іконок -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css">
+    <style>
+        :root {
+            --bs-primary: #0d6efd;
+            --bs-success: #198754;
+        }
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: #f8f9fa;
+        }
+        .product-card {
+            transition: transform 0.2s, box-shadow 0.2s;
+            border-radius: 12px;
+            overflow: hidden;
+            border: 1px solid #dee2e6;
+        }
+        .product-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 10px 20px rgba(0, 0, 0, 0.1);
+        }
+        .old-price {
+            text-decoration: line-through;
+            color: #6c757d;
+            font-size: 0.9rem;
+        }
+        .price-new {
+            font-weight: bold;
+            color: var(--bs-primary);
+            font-size: 1.25rem;
+        }
+        .filter-section {
+            background-color: #ffffff;
+            border-radius: 12px;
+            padding: 20px;
+            box-shadow: 0 4px 10px rgba(0, 0, 0, 0.05);
+        }
+        .rating-star {
+            color: orange;
+        }
+        .cart-icon-badge {
+            position: absolute;
+            top: 5px;
+            right: 5px;
+            padding: 3px 8px;
+            border-radius: 50%;
+            background-color: #dc3545; /* Red */
+            color: white;
+            font-size: 0.75rem;
+            transform: translate(25%, -25%);
+        }
+    </style>
+</head>
+<body>
+
+    <!-- Шапка з лічильником кошика -->
+    <header class="bg-primary text-white p-3 mb-4 shadow">
+        <div class="container d-flex justify-content-between align-items-center">
+            <h1 class="h3 mb-0">TechMarket</h1>
+            <div class="cart-icon position-relative">
+                <i class="fas fa-shopping-cart fa-lg"></i>
+                <span id="cart-count" class="cart-icon-badge">0</span>
+            </div>
+        </div>
+    </header>
+
+    <main class="container">
+        <div class="row">
+            <!-- Секція фільтрів та сортування -->
+            <div class="col-lg-3 mb-4">
+                <div class="filter-section sticky-top" style="top: 20px;">
+                    <h5 class="mb-3 text-primary"><i class="fas fa-filter me-2"></i>Фільтри</h5>
+                    
+                    <!-- Пошук -->
+                    <div class="mb-3">
+                        <label for="search-input" class="form-label fw-bold">Пошук за назвою</label>
+                        <input type="text" id="search-input" class="form-control" placeholder="Введіть назву..." oninput="applyFiltersAndSort()">
+                    </div>
+
+                    <!-- Фільтр за категорією -->
+                    <div class="mb-3">
+                        <label for="category-filter" class="form-label fw-bold">Категорія</label>
+                        <select id="category-filter" class="form-select" onchange="applyFiltersAndSort()">
+                            <option value="">Всі категорії</option>
+                            <option value="smartphones">Смартфони</option>
+                            <option value="laptops">Ноутбуки</option>
+                            <option value="tablets">Планшети</option>
+                        </select>
+                    </div>
+
+                    <!-- Фільтр за брендом -->
+                    <div class="mb-3">
+                        <label for="brand-filter" class="form-label fw-bold">Бренд</label>
+                        <select id="brand-filter" class="form-select" onchange="applyFiltersAndSort()">
+                            <option value="">Всі бренди</option>
+                            <option value="Apple">Apple</option>
+                            <option value="Samsung">Samsung</option>
+                            <option value="Dell">Dell</option>
+                            <option value="Xiaomi">Xiaomi</option>
+                            <option value="Lenovo">Lenovo</option>
+                        </select>
+                    </div>
+
+                    <!-- Фільтр за наявністю -->
+                    <div class="form-check mb-4">
+                        <input class="form-check-input" type="checkbox" id="stock-filter" onchange="applyFiltersAndSort()">
+                        <label class="form-check-label fw-bold" for="stock-filter">
+                            Тільки в наявності
+                        </label>
+                    </div>
+
+                    <h5 class="mb-3 text-success"><i class="fas fa-sort me-2"></i>Сортування</h5>
+                    <!-- Сортування -->
+                    <div class="mb-3">
+                        <label for="sort-by" class="form-label fw-bold">Сортувати за</label>
+                        <select id="sort-by" class="form-select" onchange="applyFiltersAndSort()">
+                            <option value="popularity-desc">Популярність (замовчуванням)</option>
+                            <option value="price-asc">Ціна (зростання)</option>
+                            <option value="price-desc">Ціна (спадання)</option>
+                            <option value="rating-desc">Рейтинг (вищий)</option>
+                        </select>
+                    </div>
+
+                </div>
+            </div>
+
+            <!-- Секція товарів -->
+            <div class="col-lg-9">
+                <h2 class="mb-4">Наші пропозиції</h2>
+                <div id="products-container" class="row row-cols-1 row-cols-md-2 row-cols-lg-3 g-4">
+                    <!-- Картки товарів будуть тут -->
+                </div>
+                <div id="no-products-message" class="alert alert-warning mt-4 d-none" role="alert">
+                    На жаль, за вашими критеріями товарів не знайдено.
+                </div>
+            </div>
+        </div>
+    </main>
+
+    <!-- Bootstrap JS Bundle -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+
+    <script>
+        // Глобальні змінні для зберігання даних
+        let allProducts = [];
+        let cart = {}; // {productId: count}
+
+        // --- 1. Імітація завантаження товарів з JSON (Fetch API) ---
+        // Оскільки ми не можемо завантажити окремий products.json,
+        // ми вбудовуємо дані та імітуємо асинхронний fetch.
+        const mockProductsData = [
+            {
+                "id": 1,
+                "name": "iPhone 15 Pro",
+                "category": "smartphones",
+                "price": 45999,
+                "oldPrice": 49999,
+                "brand": "Apple",
+                "rating": 4.8,
+                "popularity": 100, // Для сортування
+                "inStock": true,
+                "description": "Найновіший флагман від Apple."
+            },
+            {
+                "id": 2,
+                "name": "Samsung Galaxy S24 Ultra",
+                "category": "smartphones",
+                "price": 38500,
+                "oldPrice": 41000,
+                "brand": "Samsung",
+                "rating": 4.7,
+                "popularity": 90,
+                "inStock": true,
+                "description": "Потужний Android флагман з підтримкою стилуса."
+            },
+            {
+                "id": 3,
+                "name": "MacBook Air M3 13''",
+                "category": "laptops",
+                "price": 42000,
+                "oldPrice": null,
+                "brand": "Apple",
+                "rating": 4.9,
+                "popularity": 85,
+                "inStock": true,
+                "description": "Надтонкий ноутбук з чіпом M3."
+            },
+            {
+                "id": 4,
+                "name": "Dell XPS 13",
+                "category": "laptops",
+                "price": 35000,
+                "oldPrice": 37500,
+                "brand": "Dell",
+                "rating": 4.5,
+                "popularity": 50,
+                "inStock": false,
+                "description": "Преміальний ультрабук Windows."
+            },
+            {
+                "id": 5,
+                "name": "Samsung Galaxy Tab S9",
+                "category": "tablets",
+                "price": 24000,
+                "oldPrice": null,
+                "brand": "Samsung",
+                "rating": 4.6,
+                "popularity": 70,
+                "inStock": true,
+                "description": "Флагманський Android планшет."
+            },
+            {
+                "id": 6,
+                "name": "iPad Pro M4 11''",
+                "category": "tablets",
+                "price": 52000,
+                "oldPrice": null,
+                "brand": "Apple",
+                "rating": 5.0,
+                "popularity": 95,
+                "inStock": true,
+                "description": "Професійний планшет нового покоління."
+            },
+            {
+                "id": 7,
+                "name": "Xiaomi Redmi Note 13 Pro",
+                "category": "smartphones",
+                "price": 12500,
+                "oldPrice": 13999,
+                "brand": "Xiaomi",
+                "rating": 4.4,
+                "popularity": 60,
+                "inStock": true,
+                "description": "Чудовий вибір у середньому ціновому сегменті."
+            },
+            {
+                "id": 8,
+                "name": "Lenovo IdeaPad 5",
+                "category": "laptops",
+                "price": 21000,
+                "oldPrice": null,
+                "brand": "Lenovo",
+                "rating": 4.2,
+                "popularity": 40,
+                "inStock": false,
+                "description": "Надійний ноутбук для навчання та роботи."
+            }
+        ];
+
+        function fetchProducts() {
+            // Імітація Fetch API з затримкою
+            return new Promise(resolve => {
+                setTimeout(() => {
+                    resolve(mockProductsData);
+                }, 500); // 500ms затримки для імітації мережевого запиту
+            });
+        }
+
+        // --- 2. Функції кошика (LocalStorage) ---
+
+        /**
+         * Завантажує дані кошика з localStorage.
+         */
+        function loadCart() {
+            const storedCart = localStorage.getItem('techmarketCart');
+            if (storedCart) {
+                try {
+                    cart = JSON.parse(storedCart);
+                } catch (e) {
+                    console.error("Помилка парсингу кошика з localStorage:", e);
+                    cart = {};
+                }
+            } else {
+                cart = {};
+            }
+            updateCartCount();
+        }
+
+        /**
+         * Зберігає дані кошика в localStorage.
+         */
+        function saveCart() {
+            localStorage.setItem('techmarketCart', JSON.stringify(cart));
+        }
+
+        /**
+         * Оновлює лічильник товарів у шапці.
+         */
+        function updateCartCount() {
+            const totalItems = Object.values(cart).reduce((sum, count) => sum + count, 0);
+            document.getElementById('cart-count').textContent = totalItems;
+        }
+
+        /**
+         * Додає товар до кошика.
+         * @param {number} productId - ID товару.
+         */
+        window.addToCart = function(productId) {
+            const id = String(productId);
+            cart[id] = (cart[id] || 0) + 1;
+            saveCart();
+            updateCartCount();
+            alertMessage(`Товар "${allProducts.find(p => p.id === productId).name}" додано до кошика!`, 'success');
+        }
+
+        // --- 3. Відображення товарів ---
+
+        /**
+         * Створює HTML-картку для одного товару.
+         * @param {object} product - Об'єкт товару.
+         * @returns {string} HTML-рядок картки.
+         */
+        function createProductCard(product) {
+            // Форматування ціни у гривні
+            const formatPrice = (price) => new Intl.NumberFormat('uk-UA', { style: 'currency', currency: 'UAH', minimumFractionDigits: 0 }).format(price);
+
+            const oldPriceHtml = product.oldPrice
+                ? `<span class="old-price me-2">${formatPrice(product.oldPrice)}</span>`
+                : '';
+            
+            const stockBadge = product.inStock
+                ? `<span class="badge bg-success"><i class="fas fa-check-circle"></i> В наявності</span>`
+                : `<span class="badge bg-danger"><i class="fas fa-times-circle"></i> Немає в наявності</span>`;
+
+            const ratingStars = '<i class="fas fa-star rating-star"></i>'.repeat(Math.floor(product.rating)) +
+                                (product.rating % 1 !== 0 ? '<i class="fas fa-star-half-alt rating-star"></i>' : '');
+
+            return `
+                <div class="col">
+                    <div class="card h-100 product-card shadow-sm">
+                        <!-- Імітація зображення, оскільки зовнішні файли не підтримуються -->
+                        <img src="https://placehold.co/300x200/0d6efd/ffffff?text=${encodeURIComponent(product.name)}" 
+                            class="card-img-top p-2 rounded-top" alt="${product.name}" 
+                            onerror="this.onerror=null; this.src='https://placehold.co/300x200/6c757d/ffffff?text=No+Image';">
+                        
+                        <div class="card-body d-flex flex-column">
+                            <h5 class="card-title text-truncate">${product.name}</h5>
+                            <p class="card-text text-muted small mb-1">${product.description}</p>
+                            
+                            <div class="mb-2">
+                                ${stockBadge}
+                            </div>
+                            
+                            <div class="d-flex align-items-center mb-3">
+                                <span class="me-2 text-warning">${ratingStars}</span>
+                                <span class="small text-secondary">(${product.rating})</span>
+                            </div>
+
+                            <div class="mt-auto">
+                                <div class="d-flex align-items-baseline mb-2">
+                                    ${oldPriceHtml}
+                                    <span class="price-new">${formatPrice(product.price)}</span>
+                                </div>
+                                <button onclick="addToCart(${product.id})" class="btn btn-primary btn-sm w-100 ${!product.inStock ? 'disabled' : ''}">
+                                    <i class="fas fa-cart-plus me-1"></i> Додати в кошик
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            `;
+        }
+
+        /**
+         * Відображає відфільтровані та відсортовані товари.
+         * @param {Array<object>} products - Масив товарів для відображення.
+         */
+        function renderProducts(products) {
+            const container = document.getElementById('products-container');
+            const message = document.getElementById('no-products-message');
+            container.innerHTML = '';
+
+            if (products.length === 0) {
+                message.classList.remove('d-none');
+            } else {
+                message.classList.add('d-none');
+                products.forEach(product => {
+                    container.insertAdjacentHTML('beforeend', createProductCard(product));
+                });
+            }
+        }
+
+        // --- 4. Логіка фільтрації та сортування ---
+
+        /**
+         * Застосовує всі фільтри, пошук та сортування.
+         */
+        window.applyFiltersAndSort = function() {
+            let filteredProducts = [...allProducts];
+
+            // Отримання значень фільтрів
+            const category = document.getElementById('category-filter').value;
+            const brand = document.getElementById('brand-filter').value;
+            const inStock = document.getElementById('stock-filter').checked;
+            const search = document.getElementById('search-input').value.toLowerCase().trim();
+            const sortBy = document.getElementById('sort-by').value;
+
+            // 1. Фільтрація за категорією
+            if (category) {
+                filteredProducts = filteredProducts.filter(p => p.category === category);
+            }
+
+            // 2. Фільтрація за брендом
+            if (brand) {
+                filteredProducts = filteredProducts.filter(p => p.brand === brand);
+            }
+
+            // 3. Фільтрація за наявністю на складі
+            if (inStock) {
+                filteredProducts = filteredProducts.filter(p => p.inStock);
+            }
+
+            // 4. Пошук по назві
+            if (search) {
+                filteredProducts = filteredProducts.filter(p => 
+                    p.name.toLowerCase().includes(search)
+                );
+            }
+
+            // 5. Сортування
+            filteredProducts.sort((a, b) => {
+                switch (sortBy) {
+                    case 'price-asc':
+                        return a.price - b.price;
+                    case 'price-desc':
+                        return b.price - a.price;
+                    case 'rating-desc':
+                        return b.rating - a.rating;
+                    case 'popularity-desc': // Сортування за популярністю (імітованим полем)
+                    default:
+                        return (b.popularity || 0) - (a.popularity || 0);
+                }
+            });
+
+            renderProducts(filteredProducts);
+        }
+        
+        // --- 5. Кастомне повідомлення (замість alert) ---
+        /**
+         * Відображає повідомлення у стилі Bootstrap.
+         * @param {string} message - Текст повідомлення.
+         * @param {string} type - Тип (success, danger, warning).
+         */
+        function alertMessage(message, type = 'info') {
+            const alertDiv = document.createElement('div');
+            alertDiv.className = `alert alert-${type} alert-dismissible fade show fixed-top mt-3 mx-auto shadow-lg`;
+            alertDiv.style.maxWidth = '400px';
+            alertDiv.style.zIndex = '1050';
+            alertDiv.innerHTML = `
+                <div>${message}</div>
+                <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+            `;
+            document.body.appendChild(alertDiv);
+            
+            // Автоматичне зникнення через 3 секунди
+            setTimeout(() => {
+                const bsAlert = new bootstrap.Alert(alertDiv);
+                bsAlert.close();
+            }, 3000);
+        }
+
+        // --- Ініціалізація додатку ---
+        document.addEventListener('DOMContentLoaded', async () => {
+            // Завантаження кошика
+            loadCart();
+            
+            // Імітація завантаження товарів
+            try {
+                allProducts = await fetchProducts();
+                applyFiltersAndSort(); // Початкове відображення
+            } catch (error) {
+                console.error("Помилка завантаження товарів:", error);
+                document.getElementById('products-container').innerHTML = `<div class="col-12"><div class="alert alert-danger">Не вдалося завантажити дані товарів.</div></div>`;
+            }
+        });
+    </script>
+</body>
+</html>

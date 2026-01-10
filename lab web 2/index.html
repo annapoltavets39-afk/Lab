@@ -1,0 +1,549 @@
+<!DOCTYPE html>
+<html lang="uk">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Інтернет-магазин електроніки - Гаджети та Смартфони</title>
+    <!-- Підключення Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- Налаштування конфігурації Tailwind CSS, включаючи шрифт Inter -->
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    fontFamily: {
+                        sans: ['Inter', 'sans-serif'],
+                    },
+                    colors: {
+                        'primary': '#4F46E5', // Indigo 600
+                        'secondary': '#10B981', // Emerald 500
+                        'accent': '#F59E0B', // Amber 500 (for stars)
+                        'background': '#F9FAFB', // Light gray background
+                    }
+                }
+            }
+        }
+    </script>
+    <style>
+        /* Стилі для зіркового рейтингу */
+        .star-rating svg {
+            fill: currentColor;
+        }
+
+        /* Стилі для каруселі "Хіти продажів" */
+        .carousel-snap {
+            scroll-snap-type: x mandatory;
+            -webkit-overflow-scrolling: touch;
+        }
+
+        .carousel-item {
+            scroll-snap-align: start;
+            flex-shrink: 0;
+            width: calc(100% / 1.5); /* Mobile: 1.5 item visible */
+        }
+
+        @media (min-width: 640px) {
+            .carousel-item {
+                width: calc(100% / 2.5); /* Tablet: 2.5 items visible */
+            }
+        }
+
+        @media (min-width: 1024px) {
+            .carousel-item {
+                width: calc(100% / 4); /* Desktop: 4 items visible */
+            }
+        }
+    </style>
+</head>
+<body class="font-sans bg-background text-gray-800">
+
+    <!-- 1. Header з логотипом, пошуком та кошиком -->
+    <header class="bg-white shadow-md sticky top-0 z-10">
+        <div class="container mx-auto px-4 py-3 flex justify-between items-center">
+            <!-- Логотип -->
+            <a href="#" class="flex items-center space-x-2">
+                <!-- SVG Logo: Simple Phone Icon -->
+                <svg class="w-8 h-8 text-primary" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                    <path stroke-linecap="round" stroke-linejoin="round" d="M12 18h.01M8 21h8a2 2 0 002-2V5a2 2 0 00-2-2H8a2 2 0 00-2 2v14a2 2 0 002 2z" />
+                </svg>
+                <span class="text-xl font-bold text-primary">GadgetHub</span>
+            </a>
+
+            <!-- Пошук (приховано на мобільних пристроях) -->
+            <div class="hidden md:block w-full max-w-md mx-4">
+                <div class="relative">
+                    <input type="text" placeholder="Пошук товарів..." class="w-full py-2 pl-10 pr-4 border border-gray-300 rounded-lg focus:ring-primary focus:border-primary transition duration-150">
+                    <svg class="absolute left-3 top-1/2 transform -translate-y-1/2 w-5 h-5 text-gray-400" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                        <path stroke-linecap="round" stroke-linejoin="round" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
+                    </svg>
+                </div>
+            </div>
+
+            <!-- Кнопки дій -->
+            <div class="flex items-center space-x-4">
+                <button class="text-gray-500 hover:text-primary transition duration-150 p-2 rounded-full md:hidden">
+                    <svg class="w-6 h-6" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                        <path stroke-linecap="round" stroke-linejoin="round" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
+                    </svg>
+                </button>
+                <button class="text-gray-500 hover:text-primary transition duration-150 p-2 rounded-full relative" id="cart-button">
+                    <svg class="w-6 h-6" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                        <path stroke-linecap="round" stroke-linejoin="round" d="M3 3h2l.4 2M7 13h10l4-8H5.4M7 13L5.4 5M7 13l-2.293 2.293c-.63.63-.184 1.707.707 1.707H17m0 0a2 2 0 100 4 2 2 0 000-4zm-8 2a2 2 0 11-4 0 2 2 0 014 0z" />
+                    </svg>
+                    <span id="cart-count" class="absolute top-0 right-0 inline-flex items-center justify-center px-2 py-1 text-xs font-bold leading-none text-white transform translate-x-1/2 -translate-y-1/2 bg-secondary rounded-full">0</span>
+                </button>
+            </div>
+        </div>
+    </header>
+
+    <main class="container mx-auto px-4 py-8">
+
+        <!-- 2. Hero section з баннером акції -->
+        <section class="mb-12 bg-primary rounded-xl shadow-lg p-6 md:p-12 text-white overflow-hidden relative">
+            <div class="flex flex-col md:flex-row items-center justify-between relative z-10">
+                <div class="md:w-1/2 text-center md:text-left mb-6 md:mb-0">
+                    <h1 class="text-4xl md:text-5xl font-extrabold mb-3 leading-tight">
+                        Мега-розпродаж!
+                    </h1>
+                    <p class="text-xl md:text-2xl font-light mb-6">
+                        До -50% на всі смартфони останнього покоління!
+                    </p>
+                    <a href="#catalog" class="inline-block bg-secondary text-white font-semibold py-3 px-8 rounded-full shadow-lg hover:bg-emerald-600 transition duration-300 transform hover:scale-105">
+                        Обрати свій гаджет
+                    </a>
+                </div>
+                <!-- Placeholder for Image/Graphic -->
+                <div class="md:w-1/2 flex justify-center">
+                    <div class="w-40 h-40 md:w-64 md:h-64 bg-white bg-opacity-10 rounded-full flex items-center justify-center">
+                        <svg class="w-24 h-24 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.5">
+                            <path stroke-linecap="round" stroke-linejoin="round" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
+                        </svg>
+                    </div>
+                </div>
+            </div>
+            <!-- Декоративні елементи -->
+            <div class="absolute -top-10 -right-10 w-40 h-40 bg-white opacity-10 rounded-full"></div>
+            <div class="absolute -bottom-10 -left-10 w-60 h-60 bg-white opacity-5 rounded-full"></div>
+        </section>
+
+        <!-- 5. Секція "Хіти продажів" з каруселлю -->
+        <section class="mb-12">
+            <h2 class="text-3xl font-bold text-gray-800 mb-6">🔥 Хіти продажів</h2>
+
+            <div id="bestsellers-carousel" class="flex overflow-x-scroll space-x-4 pb-4 carousel-snap">
+                <!-- Картка товару для каруселі (мінімалістична) -->
+                <div class="carousel-item bg-white p-4 rounded-xl shadow-lg hover:shadow-xl transition duration-300 border border-gray-100">
+                    <img src="https://placehold.co/400x300/e0e7ff/3730a3?text=Смартфон+X" alt="Смартфон X" class="w-full h-32 object-contain mb-3 rounded-lg">
+                    <p class="text-sm font-semibold text-gray-700 truncate">Флагманський Смартфон X 256GB</p>
+                    <div class="star-rating text-accent flex text-sm my-1">
+                        <!-- 5 зірок -->
+                        <svg class="w-4 h-4" viewBox="0 0 20 20"><path d="M10 15l-5.878 3.09 1.123-6.545L.487 7.91l6.56-.955L10 1l2.953 5.955 6.56.955-4.758 4.635 1.123 6.545z"/></svg>
+                        <svg class="w-4 h-4" viewBox="0 0 20 20"><path d="M10 15l-5.878 3.09 1.123-6.545L.487 7.91l6.56-.955L10 1l2.953 5.955 6.56.955-4.758 4.635 1.123 6.545z"/></svg>
+                        <svg class="w-4 h-4" viewBox="0 0 20 20"><path d="M10 15l-5.878 3.09 1.123-6.545L.487 7.91l6.56-.955L10 1l2.953 5.955 6.56.955-4.758 4.635 1.123 6.545z"/></svg>
+                        <svg class="w-4 h-4" viewBox="0 0 20 20"><path d="M10 15l-5.878 3.09 1.123-6.545L.487 7.91l6.56-.955L10 1l2.953 5.955 6.56.955-4.758 4.635 1.123 6.545z"/></svg>
+                        <svg class="w-4 h-4 text-gray-300" viewBox="0 0 20 20"><path d="M10 15l-5.878 3.09 1.123-6.545L.487 7.91l6.56-.955L10 1l2.953 5.955 6.56.955-4.758 4.635 1.123 6.545z"/></svg>
+                    </div>
+                    <p class="text-xl font-bold text-red-500">24 999 ₴</p>
+                </div>
+                <!-- Додамо ще кілька елементів для каруселі -->
+                <div class="carousel-item bg-white p-4 rounded-xl shadow-lg hover:shadow-xl transition duration-300 border border-gray-100">
+                    <img src="https://placehold.co/400x300/fee2e2/991b1b?text=Планшет+Pro" alt="Планшет Pro" class="w-full h-32 object-contain mb-3 rounded-lg">
+                    <p class="text-sm font-semibold text-gray-700 truncate">Потужний Планшет Pro 512GB</p>
+                    <div class="star-rating text-accent flex text-sm my-1">
+                        <svg class="w-4 h-4" viewBox="0 0 20 20"><path d="M10 15l-5.878 3.09 1.123-6.545L.487 7.91l6.56-.955L10 1l2.953 5.955 6.56.955-4.758 4.635 1.123 6.545z"/></svg>
+                        <svg class="w-4 h-4" viewBox="0 0 20 20"><path d="M10 15l-5.878 3.09 1.123-6.545L.487 7.91l6.56-.955L10 1l2.953 5.955 6.56.955-4.758 4.635 1.123 6.545z"/></svg>
+                        <svg class="w-4 h-4" viewBox="0 0 20 20"><path d="M10 15l-5.878 3.09 1.123-6.545L.487 7.91l6.56-.955L10 1l2.953 5.955 6.56.955-4.758 4.635 1.123 6.545z"/></svg>
+                        <svg class="w-4 h-4" viewBox="0 0 20 20"><path d="M10 15l-5.878 3.09 1.123-6.545L.487 7.91l6.56-.955L10 1l2.953 5.955 6.56.955-4.758 4.635 1.123 6.545z"/></svg>
+                        <svg class="w-4 h-4" viewBox="0 0 20 20"><path d="M10 15l-5.878 3.09 1.123-6.545L.487 7.91l6.56-.955L10 1l2.953 5.955 6.56.955-4.758 4.635 1.123 6.545z"/></svg>
+                    </div>
+                    <p class="text-xl font-bold text-red-500">14 500 ₴</p>
+                </div>
+                <div class="carousel-item bg-white p-4 rounded-xl shadow-lg hover:shadow-xl transition duration-300 border border-gray-100">
+                    <img src="https://placehold.co/400x300/d1fae5/065f46?text=Навушники+Z" alt="Навушники Z" class="w-full h-32 object-contain mb-3 rounded-lg">
+                    <p class="text-sm font-semibold text-gray-700 truncate">Бездротові Навушники Z ANC</p>
+                    <div class="star-rating text-accent flex text-sm my-1">
+                        <svg class="w-4 h-4" viewBox="0 0 20 20"><path d="M10 15l-5.878 3.09 1.123-6.545L.487 7.91l6.56-.955L10 1l2.953 5.955 6.56.955-4.758 4.635 1.123 6.545z"/></svg>
+                        <svg class="w-4 h-4" viewBox="0 0 20 20"><path d="M10 15l-5.878 3.09 1.123-6.545L.487 7.91l6.56-.955L10 1l2.953 5.955 6.56.955-4.758 4.635 1.123 6.545z"/></svg>
+                        <svg class="w-4 h-4" viewBox="0 0 20 20"><path d="M10 15l-5.878 3.09 1.123-6.545L.487 7.91l6.56-.955L10 1l2.953 5.955 6.56.955-4.758 4.635 1.123 6.545z"/></svg>
+                        <svg class="w-4 h-4" viewBox="0 0 20 20"><path d="M10 15l-5.878 3.09 1.123-6.545L.487 7.91l6.56-.955L10 1l2.953 5.955 6.56.955-4.758 4.635 1.123 6.545z"/></svg>
+                        <svg class="w-4 h-4" viewBox="0 0 20 20"><path d="M10 15l-5.878 3.09 1.123-6.545L.487 7.91l6.56-.955L10 1l2.953 5.955 6.56.955-4.758 4.635 1.123 6.545z"/></svg>
+                    </div>
+                    <p class="text-xl font-bold text-red-500">4 899 ₴</p>
+                </div>
+                <div class="carousel-item bg-white p-4 rounded-xl shadow-lg hover:shadow-xl transition duration-300 border border-gray-100">
+                    <img src="https://placehold.co/400x300/bfdbfe/1d4ed8?text=Годинник+S" alt="Годинник S" class="w-full h-32 object-contain mb-3 rounded-lg">
+                    <p class="text-sm font-semibold text-gray-700 truncate">Смарт-годинник Sport S</p>
+                    <div class="star-rating text-accent flex text-sm my-1">
+                        <svg class="w-4 h-4" viewBox="0 0 20 20"><path d="M10 15l-5.878 3.09 1.123-6.545L.487 7.91l6.56-.955L10 1l2.953 5.955 6.56.955-4.758 4.635 1.123 6.545z"/></svg>
+                        <svg class="w-4 h-4" viewBox="0 0 20 20"><path d="M10 15l-5.878 3.09 1.123-6.545L.487 7.91l6.56-.955L10 1l2.953 5.955 6.56.955-4.758 4.635 1.123 6.545z"/></svg>
+                        <svg class="w-4 h-4" viewBox="0 0 20 20"><path d="M10 15l-5.878 3.09 1.123-6.545L.487 7.91l6.56-.955L10 1l2.953 5.955 6.56.955-4.758 4.635 1.123 6.545z"/></svg>
+                        <svg class="w-4 h-4 text-gray-300" viewBox="0 0 20 20"><path d="M10 15l-5.878 3.09 1.123-6.545L.487 7.91l6.56-.955L10 1l2.953 5.955 6.56.955-4.758 4.635 1.123 6.545z"/></svg>
+                        <svg class="w-4 h-4 text-gray-300" viewBox="0 0 20 20"><path d="M10 15l-5.878 3.09 1.123-6.545L.487 7.91l6.56-.955L10 1l2.953 5.955 6.56.955-4.758 4.635 1.123 6.545z"/></svg>
+                    </div>
+                    <p class="text-xl font-bold text-red-500">7 250 ₴</p>
+                </div>
+            </div>
+        </section>
+
+        <!-- Основний контент: Фільтри та Каталог -->
+        <div id="catalog" class="lg:flex lg:space-x-8">
+
+            <!-- 4. Фільтри товарів (Sidebar) -->
+            <aside class="lg:w-1/4 mb-8 lg:mb-0 bg-white p-6 rounded-xl shadow-lg border border-gray-100">
+                <h3 class="text-xl font-bold mb-4 border-b pb-2 text-primary">Фільтри</h3>
+
+                <!-- Фільтр 1: Категорії -->
+                <div class="mb-5">
+                    <h4 class="font-semibold mb-2">Категорія</h4>
+                    <label class="block mb-1 text-sm"><input type="checkbox" class="mr-2 rounded text-primary focus:ring-primary"> Смартфони</label>
+                    <label class="block mb-1 text-sm"><input type="checkbox" class="mr-2 rounded text-primary focus:ring-primary"> Планшети</label>
+                    <label class="block mb-1 text-sm"><input type="checkbox" class="mr-2 rounded text-primary focus:ring-primary"> Навушники</label>
+                    <label class="block mb-1 text-sm"><input type="checkbox" class="mr-2 rounded text-primary focus:ring-primary"> Смарт-годинники</label>
+                </div>
+
+                <!-- Фільтр 2: Ціна -->
+                <div class="mb-5">
+                    <h4 class="font-semibold mb-2">Ціна (₴)</h4>
+                    <input type="range" min="1000" max="50000" value="25000" class="w-full h-1 bg-gray-200 rounded-lg appearance-none cursor-pointer range-lg">
+                    <div class="flex justify-between text-xs mt-1">
+                        <span>1 000</span>
+                        <span>50 000+</span>
+                    </div>
+                </div>
+
+                <!-- Фільтр 3: Рейтинг -->
+                <div class="mb-5">
+                    <h4 class="font-semibold mb-2">Рейтинг</h4>
+                    <label class="block mb-1 text-sm"><input type="radio" name="rating" class="mr-2 text-primary focus:ring-primary"> 4 зірки та вище</label>
+                    <label class="block mb-1 text-sm"><input type="radio" name="rating" class="mr-2 text-primary focus:ring-primary"> 3 зірки та вище</label>
+                    <label class="block mb-1 text-sm"><input type="radio" name="rating" class="mr-2 text-primary focus:ring-primary"> Усі</label>
+                </div>
+
+                <button class="w-full bg-primary text-white py-2 rounded-lg font-semibold hover:bg-indigo-700 transition duration-300">
+                    Застосувати
+                </button>
+            </aside>
+
+            <!-- 3. Каталог товарів (6+ карток у сітці) -->
+            <div class="lg:w-3/4">
+                <h2 class="text-3xl font-bold text-gray-800 mb-6">Каталог товарів</h2>
+                
+                <!-- Адаптивна сітка: 1 колонка (mobile), 2 (tablet), 3 (desktop) -->
+                <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
+
+                    <!-- Продукт 1: Смартфон Alpha -->
+                    <div class="product-card bg-white p-5 rounded-xl shadow-lg hover:shadow-2xl transition duration-300 transform hover:-translate-y-1 border border-gray-100 flex flex-col justify-between">
+                        <div>
+                            <img src="https://placehold.co/600x400/007bff/ffffff?text=Смартфон+Alpha" alt="Смартфон Alpha" class="w-full h-40 object-contain mb-4 rounded-lg">
+                            <h3 class="text-xl font-bold mb-2 truncate">Смартфон Alpha Pro Max</h3>
+                            <p class="text-sm text-gray-500 mb-3">6.7" OLED, 128GB, 48MP камера.</p>
+                            
+                            <!-- Рейтинг зірками (4.5) -->
+                            <div class="star-rating text-accent flex mb-3">
+                                <template data-rating="4.5">
+                                    <svg class="w-5 h-5" viewBox="0 0 20 20"><path d="M10 15l-5.878 3.09 1.123-6.545L.487 7.91l6.56-.955L10 1l2.953 5.955 6.56.955-4.758 4.635 1.123 6.545z"/></svg>
+                                    <svg class="w-5 h-5" viewBox="0 0 20 20"><path d="M10 15l-5.878 3.09 1.123-6.545L.487 7.91l6.56-.955L10 1l2.953 5.955 6.56.955-4.758 4.635 1.123 6.545z"/></svg>
+                                    <svg class="w-5 h-5" viewBox="0 0 20 20"><path d="M10 15l-5.878 3.09 1.123-6.545L.487 7.91l6.56-.955L10 1l2.953 5.955 6.56.955-4.758 4.635 1.123 6.545z"/></svg>
+                                    <svg class="w-5 h-5" viewBox="0 0 20 20"><path d="M10 15l-5.878 3.09 1.123-6.545L.487 7.91l6.56-.955L10 1l2.953 5.955 6.56.955-4.758 4.635 1.123 6.545z"/></svg>
+                                    <!-- Half Star -->
+                                    <svg class="w-5 h-5" viewBox="0 0 20 20"><linearGradient id="half1"><stop offset="50%" stop-color="#F59E0B"/><stop offset="50%" stop-color="#D1D5DB"/></linearGradient><path fill="url(#half1)" d="M10 15l-5.878 3.09 1.123-6.545L.487 7.91l6.56-.955L10 1l2.953 5.955 6.56.955-4.758 4.635 1.123 6.545z"/></svg>
+                                </template>
+                            </div>
+                        </div>
+                        <div class="mt-auto">
+                            <p class="text-2xl font-extrabold text-primary mb-4">19 999 ₴</p>
+                            <button data-product-id="A001" class="add-to-cart-btn w-full bg-secondary text-white py-3 rounded-lg font-semibold hover:bg-emerald-600 transition duration-300 shadow-md hover:shadow-xl">
+                                В кошик
+                            </button>
+                        </div>
+                    </div>
+
+                    <!-- Продукт 2: Планшет Delta -->
+                    <div class="product-card bg-white p-5 rounded-xl shadow-lg hover:shadow-2xl transition duration-300 transform hover:-translate-y-1 border border-gray-100 flex flex-col justify-between">
+                        <div>
+                            <img src="https://placehold.co/600x400/ef4444/ffffff?text=Планшет+Delta" alt="Планшет Delta" class="w-full h-40 object-contain mb-4 rounded-lg">
+                            <h3 class="text-xl font-bold mb-2 truncate">Планшет Delta 10.9"</h3>
+                            <p class="text-sm text-gray-500 mb-3">10.9" Liquid Retina, 64GB, Wi-Fi.</p>
+                            
+                            <!-- Рейтинг зірками (5.0) -->
+                            <div class="star-rating text-accent flex mb-3">
+                                <template data-rating="5.0">
+                                    <svg class="w-5 h-5" viewBox="0 0 20 20"><path d="M10 15l-5.878 3.09 1.123-6.545L.487 7.91l6.56-.955L10 1l2.953 5.955 6.56.955-4.758 4.635 1.123 6.545z"/></svg>
+                                    <svg class="w-5 h-5" viewBox="0 0 20 20"><path d="M10 15l-5.878 3.09 1.123-6.545L.487 7.91l6.56-.955L10 1l2.953 5.955 6.56.955-4.758 4.635 1.123 6.545z"/></svg>
+                                    <svg class="w-5 h-5" viewBox="0 0 20 20"><path d="M10 15l-5.878 3.09 1.123-6.545L.487 7.91l6.56-.955L10 1l2.953 5.955 6.56.955-4.758 4.635 1.123 6.545z"/></svg>
+                                    <svg class="w-5 h-5" viewBox="0 0 20 20"><path d="M10 15l-5.878 3.09 1.123-6.545L.487 7.91l6.56-.955L10 1l2.953 5.955 6.56.955-4.758 4.635 1.123 6.545z"/></svg>
+                                    <svg class="w-5 h-5" viewBox="0 0 20 20"><path d="M10 15l-5.878 3.09 1.123-6.545L.487 7.91l6.56-.955L10 1l2.953 5.955 6.56.955-4.758 4.635 1.123 6.545z"/></svg>
+                                </template>
+                            </div>
+                        </div>
+                        <div class="mt-auto">
+                            <p class="text-2xl font-extrabold text-primary mb-4">11 499 ₴</p>
+                            <button data-product-id="A002" class="add-to-cart-btn w-full bg-secondary text-white py-3 rounded-lg font-semibold hover:bg-emerald-600 transition duration-300 shadow-md hover:shadow-xl">
+                                В кошик
+                            </button>
+                        </div>
+                    </div>
+
+                    <!-- Продукт 3: Навушники Gamma -->
+                    <div class="product-card bg-white p-5 rounded-xl shadow-lg hover:shadow-2xl transition duration-300 transform hover:-translate-y-1 border border-gray-100 flex flex-col justify-between">
+                        <div>
+                            <img src="https://placehold.co/600x400/10b981/ffffff?text=Навушники+Gamma" alt="Навушники Gamma" class="w-full h-40 object-contain mb-4 rounded-lg">
+                            <h3 class="text-xl font-bold mb-2 truncate">Навушники Gamma ANC Pro</h3>
+                            <p class="text-sm text-gray-500 mb-3">Активне шумозаглушення, 40 год. роботи.</p>
+                            
+                            <!-- Рейтинг зірками (4.0) -->
+                            <div class="star-rating text-accent flex mb-3">
+                                <template data-rating="4.0">
+                                    <svg class="w-5 h-5" viewBox="0 0 20 20"><path d="M10 15l-5.878 3.09 1.123-6.545L.487 7.91l6.56-.955L10 1l2.953 5.955 6.56.955-4.758 4.635 1.123 6.545z"/></svg>
+                                    <svg class="w-5 h-5" viewBox="0 0 20 20"><path d="M10 15l-5.878 3.09 1.123-6.545L.487 7.91l6.56-.955L10 1l2.953 5.955 6.56.955-4.758 4.635 1.123 6.545z"/></svg>
+                                    <svg class="w-5 h-5" viewBox="0 0 20 20"><path d="M10 15l-5.878 3.09 1.123-6.545L.487 7.91l6.56-.955L10 1l2.953 5.955 6.56.955-4.758 4.635 1.123 6.545z"/></svg>
+                                    <svg class="w-5 h-5" viewBox="0 0 20 20"><path d="M10 15l-5.878 3.09 1.123-6.545L.487 7.91l6.56-.955L10 1l2.953 5.955 6.56.955-4.758 4.635 1.123 6.545z"/></svg>
+                                    <svg class="w-5 h-5 text-gray-300" viewBox="0 0 20 20"><path d="M10 15l-5.878 3.09 1.123-6.545L.487 7.91l6.56-.955L10 1l2.953 5.955 6.56.955-4.758 4.635 1.123 6.545z"/></svg>
+                                </template>
+                            </div>
+                        </div>
+                        <div class="mt-auto">
+                            <p class="text-2xl font-extrabold text-primary mb-4">4 200 ₴</p>
+                            <button data-product-id="A003" class="add-to-cart-btn w-full bg-secondary text-white py-3 rounded-lg font-semibold hover:bg-emerald-600 transition duration-300 shadow-md hover:shadow-xl">
+                                В кошик
+                            </button>
+                        </div>
+                    </div>
+
+                    <!-- Продукт 4: Годинник Neo -->
+                    <div class="product-card bg-white p-5 rounded-xl shadow-lg hover:shadow-2xl transition duration-300 transform hover:-translate-y-1 border border-gray-100 flex flex-col justify-between">
+                        <div>
+                            <img src="https://placehold.co/600x400/93c5fd/1e3a8a?text=Годинник+Neo" alt="Годинник Neo" class="w-full h-40 object-contain mb-4 rounded-lg">
+                            <h3 class="text-xl font-bold mb-2 truncate">Смарт-годинник Neo</h3>
+                            <p class="text-sm text-gray-500 mb-3">GPS, водонепроникний, моніторинг сну.</p>
+                            
+                            <!-- Рейтинг зірками (3.5) -->
+                            <div class="star-rating text-accent flex mb-3">
+                                <template data-rating="3.5">
+                                    <svg class="w-5 h-5" viewBox="0 0 20 20"><path d="M10 15l-5.878 3.09 1.123-6.545L.487 7.91l6.56-.955L10 1l2.953 5.955 6.56.955-4.758 4.635 1.123 6.545z"/></svg>
+                                    <svg class="w-5 h-5" viewBox="0 0 20 20"><path d="M10 15l-5.878 3.09 1.123-6.545L.487 7.91l6.56-.955L10 1l2.953 5.955 6.56.955-4.758 4.635 1.123 6.545z"/></svg>
+                                    <svg class="w-5 h-5" viewBox="0 0 20 20"><path d="M10 15l-5.878 3.09 1.123-6.545L.487 7.91l6.56-.955L10 1l2.953 5.955 6.56.955-4.758 4.635 1.123 6.545z"/></svg>
+                                    <!-- Half Star -->
+                                    <svg class="w-5 h-5" viewBox="0 0 20 20"><linearGradient id="half2"><stop offset="50%" stop-color="#F59E0B"/><stop offset="50%" stop-color="#D1D5DB"/></linearGradient><path fill="url(#half2)" d="M10 15l-5.878 3.09 1.123-6.545L.487 7.91l6.56-.955L10 1l2.953 5.955 6.56.955-4.758 4.635 1.123 6.545z"/></svg>
+                                    <svg class="w-5 h-5 text-gray-300" viewBox="0 0 20 20"><path d="M10 15l-5.878 3.09 1.123-6.545L.487 7.91l6.56-.955L10 1l2.953 5.955 6.56.955-4.758 4.635 1.123 6.545z"/></svg>
+                                </template>
+                            </div>
+                        </div>
+                        <div class="mt-auto">
+                            <p class="text-2xl font-extrabold text-primary mb-4">6 500 ₴</p>
+                            <button data-product-id="A004" class="add-to-cart-btn w-full bg-secondary text-white py-3 rounded-lg font-semibold hover:bg-emerald-600 transition duration-300 shadow-md hover:shadow-xl">
+                                В кошик
+                            </button>
+                        </div>
+                    </div>
+                    
+                    <!-- Продукт 5: Смартфон Beta -->
+                    <div class="product-card bg-white p-5 rounded-xl shadow-lg hover:shadow-2xl transition duration-300 transform hover:-translate-y-1 border border-gray-100 flex flex-col justify-between">
+                        <div>
+                            <img src="https://placehold.co/600x400/99f6e4/0d9488?text=Смартфон+Beta" alt="Смартфон Beta" class="w-full h-40 object-contain mb-4 rounded-lg">
+                            <h3 class="text-xl font-bold mb-2 truncate">Смартфон Beta Lite</h3>
+                            <p class="text-sm text-gray-500 mb-3">6.1" AMOLED, 64GB, доступна ціна.</p>
+                            
+                            <!-- Рейтинг зірками (4.0) -->
+                            <div class="star-rating text-accent flex mb-3">
+                                <template data-rating="4.0">
+                                    <svg class="w-5 h-5" viewBox="0 0 20 20"><path d="M10 15l-5.878 3.09 1.123-6.545L.487 7.91l6.56-.955L10 1l2.953 5.955 6.56.955-4.758 4.635 1.123 6.545z"/></svg>
+                                    <svg class="w-5 h-5" viewBox="0 0 20 20"><path d="M10 15l-5.878 3.09 1.123-6.545L.487 7.91l6.56-.955L10 1l2.953 5.955 6.56.955-4.758 4.635 1.123 6.545z"/></svg>
+                                    <svg class="w-5 h-5" viewBox="0 0 20 20"><path d="M10 15l-5.878 3.09 1.123-6.545L.487 7.91l6.56-.955L10 1l2.953 5.955 6.56.955-4.758 4.635 1.123 6.545z"/></svg>
+                                    <svg class="w-5 h-5" viewBox="0 0 20 20"><path d="M10 15l-5.878 3.09 1.123-6.545L.487 7.91l6.56-.955L10 1l2.953 5.955 6.56.955-4.758 4.635 1.123 6.545z"/></svg>
+                                    <svg class="w-5 h-5 text-gray-300" viewBox="0 0 20 20"><path d="M10 15l-5.878 3.09 1.123-6.545L.487 7.91l6.56-.955L10 1l2.953 5.955 6.56.955-4.758 4.635 1.123 6.545z"/></svg>
+                                </template>
+                            </div>
+                        </div>
+                        <div class="mt-auto">
+                            <p class="text-2xl font-extrabold text-primary mb-4">8 999 ₴</p>
+                            <button data-product-id="A005" class="add-to-cart-btn w-full bg-secondary text-white py-3 rounded-lg font-semibold hover:bg-emerald-600 transition duration-300 shadow-md hover:shadow-xl">
+                                В кошик
+                            </button>
+                        </div>
+                    </div>
+
+                    <!-- Продукт 6: Камера Pro -->
+                    <div class="product-card bg-white p-5 rounded-xl shadow-lg hover:shadow-2xl transition duration-300 transform hover:-translate-y-1 border border-gray-100 flex flex-col justify-between">
+                        <div>
+                            <img src="https://placehold.co/600x400/fecaca/b91c1c?text=Камера+Pro" alt="Камера Pro" class="w-full h-40 object-contain mb-4 rounded-lg">
+                            <h3 class="text-xl font-bold mb-2 truncate">Екшн-камера Pro 4K</h3>
+                            <p class="text-sm text-gray-500 mb-3">4K/60fps, водонепроникність до 30м.</p>
+                            
+                            <!-- Рейтинг зірками (4.5) -->
+                            <div class="star-rating text-accent flex mb-3">
+                                <template data-rating="4.5">
+                                    <svg class="w-5 h-5" viewBox="0 0 20 20"><path d="M10 15l-5.878 3.09 1.123-6.545L.487 7.91l6.56-.955L10 1l2.953 5.955 6.56.955-4.758 4.635 1.123 6.545z"/></svg>
+                                    <svg class="w-5 h-5" viewBox="0 0 20 20"><path d="M10 15l-5.878 3.09 1.123-6.545L.487 7.91l6.56-.955L10 1l2.953 5.955 6.56.955-4.758 4.635 1.123 6.545z"/></svg>
+                                    <svg class="w-5 h-5" viewBox="0 0 20 20"><path d="M10 15l-5.878 3.09 1.123-6.545L.487 7.91l6.56-.955L10 1l2.953 5.955 6.56.955-4.758 4.635 1.123 6.545z"/></svg>
+                                    <svg class="w-5 h-5" viewBox="0 0 20 20"><path d="M10 15l-5.878 3.09 1.123-6.545L.487 7.91l6.56-.955L10 1l2.953 5.955 6.56.955-4.758 4.635 1.123 6.545z"/></svg>
+                                    <!-- Half Star -->
+                                    <svg class="w-5 h-5" viewBox="0 0 20 20"><linearGradient id="half3"><stop offset="50%" stop-color="#F59E0B"/><stop offset="50%" stop-color="#D1D5DB"/></linearGradient><path fill="url(#half3)" d="M10 15l-5.878 3.09 1.123-6.545L.487 7.91l6.56-.955L10 1l2.953 5.955 6.56.955-4.758 4.635 1.123 6.545z"/></svg>
+                                </template>
+                            </div>
+                        </div>
+                        <div class="mt-auto">
+                            <p class="text-2xl font-extrabold text-primary mb-4">12 800 ₴</p>
+                            <button data-product-id="A006" class="add-to-cart-btn w-full bg-secondary text-white py-3 rounded-lg font-semibold hover:bg-emerald-600 transition duration-300 shadow-md hover:shadow-xl">
+                                В кошик
+                            </button>
+                        </div>
+                    </div>
+                    
+                    <!-- Додатковий продукт 7 -->
+                    <div class="product-card bg-white p-5 rounded-xl shadow-lg hover:shadow-2xl transition duration-300 transform hover:-translate-y-1 border border-gray-100 flex flex-col justify-between">
+                        <div>
+                            <img src="https://placehold.co/600x400/fde047/713f12?text=Powerbank+20k" alt="Powerbank 20k" class="w-full h-40 object-contain mb-4 rounded-lg">
+                            <h3 class="text-xl font-bold mb-2 truncate">Powerbank 20000 mAh</h3>
+                            <p class="text-sm text-gray-500 mb-3">Швидка зарядка 65W, компактний.</p>
+                            
+                            <!-- Рейтинг зірками (4.0) -->
+                            <div class="star-rating text-accent flex mb-3">
+                                <template data-rating="4.0">
+                                    <svg class="w-5 h-5" viewBox="0 0 20 20"><path d="M10 15l-5.878 3.09 1.123-6.545L.487 7.91l6.56-.955L10 1l2.953 5.955 6.56.955-4.758 4.635 1.123 6.545z"/></svg>
+                                    <svg class="w-5 h-5" viewBox="0 0 20 20"><path d="M10 15l-5.878 3.09 1.123-6.545L.487 7.91l6.56-.955L10 1l2.953 5.955 6.56.955-4.758 4.635 1.123 6.545z"/></svg>
+                                    <svg class="w-5 h-5" viewBox="0 0 20 20"><path d="M10 15l-5.878 3.09 1.123-6.545L.487 7.91l6.56-.955L10 1l2.953 5.955 6.56.955-4.758 4.635 1.123 6.545z"/></svg>
+                                    <svg class="w-5 h-5" viewBox="0 0 20 20"><path d="M10 15l-5.878 3.09 1.123-6.545L.487 7.91l6.56-.955L10 1l2.953 5.955 6.56.955-4.758 4.635 1.123 6.545z"/></svg>
+                                    <svg class="w-5 h-5 text-gray-300" viewBox="0 0 20 20"><path d="M10 15l-5.878 3.09 1.123-6.545L.487 7.91l6.56-.955L10 1l2.953 5.955 6.56.955-4.758 4.635 1.123 6.545z"/></svg>
+                                </template>
+                            </div>
+                        </div>
+                        <div class="mt-auto">
+                            <p class="text-2xl font-extrabold text-primary mb-4">2 100 ₴</p>
+                            <button data-product-id="A007" class="add-to-cart-btn w-full bg-secondary text-white py-3 rounded-lg font-semibold hover:bg-emerald-600 transition duration-300 shadow-md hover:shadow-xl">
+                                В кошик
+                            </button>
+                        </div>
+                    </div>
+
+                </div>
+            </div>
+
+        </div>
+    </main>
+
+    <!-- 6. Підвал з контактами та соціальними мережами -->
+    <footer class="bg-gray-900 text-white mt-12">
+        <div class="container mx-auto px-4 py-12 grid grid-cols-1 md:grid-cols-4 gap-8">
+            <!-- Про магазин -->
+            <div>
+                <h4 class="text-xl font-bold mb-4 text-primary">GadgetHub</h4>
+                <p class="text-sm text-gray-400">
+                    Ваш надійний партнер у світі новітніх гаджетів та технологій.
+                </p>
+            </div>
+
+            <!-- Контакти -->
+            <div>
+                <h4 class="text-lg font-semibold mb-4">Контакти</h4>
+                <ul class="space-y-2 text-sm text-gray-400">
+                    <li><a href="tel:+380441234567" class="hover:text-white transition duration-150">+38 (044) 123-45-67</a></li>
+                    <li><a href="mailto:support@gadgethub.ua" class="hover:text-white transition duration-150">support@gadgethub.ua</a></li>
+                    <li>Київ, пр. Перемоги, 12</li>
+                </ul>
+            </div>
+
+            <!-- Інформація -->
+            <div>
+                <h4 class="text-lg font-semibold mb-4">Інформація</h4>
+                <ul class="space-y-2 text-sm text-gray-400">
+                    <li><a href="#" class="hover:text-white transition duration-150">Доставка та оплата</a></li>
+                    <li><a href="#" class="hover:text-white transition duration-150">Гарантія та повернення</a></li>
+                    <li><a href="#" class="hover:text-white transition duration-150">Про нас</a></li>
+                </ul>
+            </div>
+
+            <!-- Соціальні мережі -->
+            <div>
+                <h4 class="text-lg font-semibold mb-4">Ми в соцмережах</h4>
+                <div class="flex space-x-4">
+                    <!-- Facebook Icon -->
+                    <a href="#" class="text-gray-400 hover:text-primary transition duration-150">
+                        <svg class="w-6 h-6" fill="currentColor" viewBox="0 0 24 24"><path d="M12 2C6.477 2 2 6.477 2 12c0 5.143 3.791 9.424 8.75 10.385V14.88H8.076V12h2.674V9.897c0-2.648 1.62-4.102 3.987-4.102 1.13 0 2.103.2 2.385.289V7.6h-1.61c-1.282 0-1.53.608-1.53 1.498V12h3.184l-.515 2.88h-2.669v7.505c4.959-.961 8.75-5.242 8.75-10.385C22 6.477 17.523 2 12 2z"/></svg>
+                    </a>
+                    <!-- Instagram Icon -->
+                    <a href="#" class="text-gray-400 hover:text-primary transition duration-150">
+                        <svg class="w-6 h-6" fill="currentColor" viewBox="0 0 24 24"><path d="M12 2c2.75 0 3.083.011 4.167.06A7.95 7.95 0 0121.94 5.833c.048 1.084.06 1.417.06 4.167v4.166c0 2.75-.012 3.083-.06 4.167a7.95 7.95 0 01-5.833 5.833c-1.084.048-1.417.06-4.167.06s-3.083-.012-4.167-.06a7.95 7.95 0 01-5.833-5.833c-.048-1.084-.06-1.417-.06-4.167V9.999c0-2.75.012-3.083.06-4.167A7.95 7.95 0 015.833 2.06c1.084-.048 1.417-.06 4.167-.06h4.001zm0 2h-4.001c-2.744 0-3.078.01-4.062.053A5.95 5.95 0 003.937 5.937c-.043.984-.053 1.318-.053 4.062v4.001c0 2.744.01 3.078.053 4.062a5.95 5.95 0 001.94 1.94c.984.043 1.318.053 4.062.053h4.001c2.744 0 3.078-.01 4.062-.053a5.95 5.95 0 001.94-1.94c.043-.984.053-1.318.053-4.062v-4.001c0-2.744-.01-3.078-.053-4.062a5.95 5.95 0 00-1.94-1.94c-.984-.043-1.318-.053-4.062-.053zm0 3.5a4.5 4.5 0 100 9 4.5 4.5 0 000-9zm0 2a2.5 2.5 0 110 5 2.5 2.5 0 010-5zm5.5-1.5a1 1 0 100 2 1 1 0 000-2z"/></svg>
+                    </a>
+                    <!-- Telegram Icon (Simple) -->
+                    <a href="#" class="text-gray-400 hover:text-primary transition duration-150">
+                        <svg class="w-6 h-6" fill="currentColor" viewBox="0 0 24 24"><path d="M12 2C6.477 2 2 6.477 2 12s4.477 10 10 10 10-4.477 10-10S17.523 2 12 2zm4.35 7.15c-.172 0-.34.066-.465.195L9.5 13.91l-.64-3.08c-.067-.32-.232-.613-.478-.853L4.95 8.95c-.37-.37-.97-.37-1.34 0s-.37.97 0 1.34l3.75 3.75c.146.146.335.244.538.283l3.64.65c.205.035.41.02.597-.044l4.2-2.1c.36-.18.497-.61.325-.97s-.61-.497-.97-.325l-4.2 2.1c-.078.038-.178.033-.255-.01l-3.64-.65c-.12-.02-.238-.073-.343-.16l-1.35-1.35 5.25-3.65c.32-.224.75-.157.975.163s.158.75-.163.975L12 12.59l4.58-2.3c.32-.16.368-.545.105-.758z"/></svg>
+                    </a>
+                </div>
+            </div>
+        </div>
+        <div class="bg-gray-800 py-4">
+            <div class="container mx-auto px-4 text-center text-sm text-gray-400">
+                &copy; 2024 GadgetHub. Усі права захищено.
+            </div>
+        </div>
+    </footer>
+
+    <!-- JS для інтерактиву -->
+    <script>
+        // Сховище для кошика (використовуємо localStorage для демонстрації)
+        let cart = JSON.parse(localStorage.getItem('cart')) || [];
+        const cartCountElement = document.getElementById('cart-count');
+
+        // Функція оновлення лічильника кошика
+        function updateCartCount() {
+            cartCountElement.textContent = cart.length;
+        }
+
+        // Функція додавання товару до кошика
+        function addToCart(productId) {
+            cart.push({ id: productId, name: `Товар ${productId}`, quantity: 1 });
+            localStorage.setItem('cart', JSON.stringify(cart));
+            updateCartCount();
+
+            // Візуальний зворотний зв'язок (без alert())
+            const cartButton = document.getElementById('cart-button');
+            cartButton.classList.add('animate-pulse', 'ring-4', 'ring-secondary', 'ring-opacity-50');
+            setTimeout(() => {
+                cartButton.classList.remove('animate-pulse', 'ring-4', 'ring-secondary', 'ring-opacity-50');
+            }, 500);
+
+            console.log(`Товар ${productId} додано до кошика. Всього: ${cart.length}`);
+        }
+
+        // Додаємо обробники подій до кнопок "В кошик"
+        document.querySelectorAll('.add-to-cart-btn').forEach(button => {
+            button.addEventListener('click', (event) => {
+                const productId = event.currentTarget.getAttribute('data-product-id');
+                addToCart(productId);
+            });
+        });
+
+        // Забезпечуємо початкове відображення кількості товарів у кошику
+        document.addEventListener('DOMContentLoaded', updateCartCount);
+
+        // Функція для створення зіркового рейтингу (для відображення шаблонів)
+        function renderStarRatings() {
+            document.querySelectorAll('.star-rating template').forEach(template => {
+                const rating = parseFloat(template.getAttribute('data-rating'));
+                const parent = template.parentElement;
+                
+                // Очищаємо вміст перед вставкою
+                parent.innerHTML = ''; 
+
+                const fullStar = '<svg class="w-5 h-5" viewBox="0 0 20 20"><path d="M10 15l-5.878 3.09 1.123-6.545L.487 7.91l6.56-.955L10 1l2.953 5.955 6.56.955-4.758 4.635 1.123 6.545z"/></svg>';
+                const emptyStar = '<svg class="w-5 h-5 text-gray-300" viewBox="0 0 20 20"><path d="M10 15l-5.878 3.09 1.123-6.545L.487 7.91l6.56-.955L10 1l2.953 5.955 6.56.955-4.758 4.635 1.123 6.545z"/></svg>';
+                const halfStar = `<svg class="w-5 h-5" viewBox="0 0 20 20"><linearGradient id="half-${Math.random().toString(36).substring(7)}"><stop offset="50%" stop-color="#F59E0B"/><stop offset="50%" stop-color="#D1D5DB"/></linearGradient><path fill="url(#half-${Math.random().toString(36).substring(7)})" d="M10 15l-5.878 3.09 1.123-6.545L.487 7.91l6.56-.955L10 1l2.953 5.955 6.56.955-4.758 4.635 1.123 6.545z"/></svg>`;
+
+                for (let i = 1; i <= 5; i++) {
+                    if (i <= Math.floor(rating)) {
+                        parent.innerHTML += fullStar;
+                    } else if (i - 0.5 === rating) {
+                        parent.innerHTML += halfStar;
+                    } else {
+                        parent.innerHTML += emptyStar;
+                    }
+                }
+            });
+        }
+
+        // Викликаємо функцію для відображення зірок після завантаження DOM
+        document.addEventListener('DOMContentLoaded', renderStarRatings);
+    </script>
+</body>
+</html>
